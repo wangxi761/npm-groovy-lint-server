@@ -1,21 +1,22 @@
 const express = require('express');
+const format=require('./format.js');
 
 const app = express();
 const port = 3000;
 
-app.use(express.json());
+app.use(express.raw({ type: '*/*' }));
 
 app.post('/format', async (req, res) => {
     try {
-        const sourceCode = req.body.sourceCode;
+        const sourceCode = req.body.toString();
         if (!sourceCode) {
-            return res.status(400).json({ error: 'Source code is required.' });
+            return res.status(400).send('Source code is required');
         }
         let updateSource = await format(sourceCode)
-        res.status(200).json({ "success": true, "sourceCode": updateSource });
+        res.status(200).send(Buffer.from(updateSource));
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'An error occurred while formatting the code.' });
+        res.status(500).send('An error occurred while formatting the code');
     }
 });
 
